@@ -1,0 +1,111 @@
+{
+    "root_dir_name": "Android_Extraction",
+    "default_first_name": "Aiden",
+    "default_surname": "Smith",
+    "native_apps": [
+        "Phone", "Messages (SMS)", "Chrome", "Contacts", "Camera", 
+        "Gallery", "Calendar", "Calculator", "Settings", 
+        "Pixel Launcher", "Google", "Maps", "Digital Wellbeing"
+    ],
+    "app_catalog": {
+        "Messaging": {
+            "WhatsApp": "com.whatsapp",
+            "Telegram": "org.telegram.messenger",
+            "Signal": "org.thoughtcrime.securesms",
+            "Facebook Messenger": "com.facebook.orca",
+            "Discord": "com.discord",
+            "Slack": "com.Slack",
+            "Microsoft Teams": "com.microsoft.teams",
+            "Viber": "com.viber.voip",
+            "WeChat": "com.tencent.mm"
+        },
+        "Social Media": {
+            "Instagram": "com.instagram.android",
+            "Facebook": "com.facebook.katana",
+            "Snapchat": "com.snapchat.android",
+            "Twitter (X)": "com.twitter.android",
+            "TikTok": "com.zhiliaoapp.musically",
+            "LinkedIn": "com.linkedin.android",
+            "Reddit": "com.reddit.frontpage",
+            "Pinterest": "com.pinterest",
+            "Tumblr": "com.tumblr"
+        },
+        "Finance": {
+            "PayPal": "com.paypal.android.p2pmobile",
+            "Cash App": "com.squareup.cash",
+            "Venmo": "com.venmo",
+            "Coinbase": "com.coinbase.android",
+            "Chase Mobile": "com.chase.sig.android",
+            "Revolut": "com.revolut.revolut",
+            "Robinhood": "com.robinhood.android",
+            "Binance": "com.binance.dev"
+        },
+        "Shopping": {
+            "Amazon Shopping": "com.amazon.mShop.android.shopping",
+            "eBay": "com.ebay.mobile",
+            "Etsy": "com.etsy.android",
+            "Walmart": "com.walmart.android",
+            "Target": "com.target.ui",
+            "AliExpress": "com.alibaba.aliexpresshd"
+        },
+        "Health & Fitness": {
+            "Fitbit": "com.fitbit.FitbitMobile",
+            "MyFitnessPal": "com.myfitnesspal.android",
+            "Strava": "com.strava",
+            "Calm": "com.calm.android"
+        },
+        "Dating": {
+            "Tinder": "com.tinder",
+            "Bumble": "com.bumble.app",
+            "Hinge": "co.hinge.app",
+            "Grindr": "com.grindrapp.android",
+            "OkCupid": "com.okcupid.okcupid"
+        },
+        "Travel & Transport": {
+            "Uber": "com.ubercab",
+            "Lyft": "me.lyft.android",
+            "Airbnb": "com.airbnb.android",
+            "Google Earth": "com.google.earth",
+            "Booking.com": "com.booking",
+            "Expedia": "com.expedia.bookings"
+        },
+        "Productivity & Tools": {
+            "Zoom": "us.zoom.videomeetings",
+            "Google Meet": "com.google.android.apps.meetings",
+            "Dropbox": "com.dropbox.android",
+            "ProtonMail": "ch.protonmail.android",
+            "Firefox": "org.mozilla.firefox",
+            "Tor Browser": "org.torproject.torbrowser",
+            "Microsoft Outlook": "com.microsoft.office.outlook",
+            "Evernote": "com.evernote"
+        },
+        "Entertainment": {
+            "Spotify": "com.spotify.music",
+            "Netflix": "com.netflix.mediaclient",
+            "YouTube": "com.google.android.youtube",
+            "Twitch": "tv.twitch.android",
+            "Hulu": "com.hulu.plus",
+            "Disney+": "com.disney.disneyplus"
+        },
+        "News": {
+            "NYTimes": "com.nytimes.android",
+            "BBC News": "bbc.mobile.news.ww",
+            "CNN": "com.cnn.mobile.android.phone",
+            "Fox News": "com.foxnews.android"
+        }
+    },
+    "relationship_prefs": {
+        "Colleague": ["Microsoft Teams", "Slack", "Zoom", "Google Meet", "Email", "Phone", "Messages (SMS)"],
+        "Family": ["WhatsApp", "Signal", "Phone", "Messages (SMS)", "Google Meet", "Facebook Messenger"],
+        "Friend": ["Instagram", "Snapchat", "WhatsApp", "Signal", "Discord", "Facebook Messenger", "Phone", "Messages (SMS)"],
+        "Service": ["Messages (SMS)", "Email"]
+    },
+    "browser_topic_map": {
+        "hiking": [{"title": "AllTrails", "url": "https://alltrails.com"}], 
+        "news": [{"title": "CNN", "url": "https://cnn.com"}]
+    },
+    "common_urls": [
+        {"title": "Google", "url": "https://google.com"}, 
+        {"title": "Gmail", "url": "https://mail.google.com"}
+    ]
+}

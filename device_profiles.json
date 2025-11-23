@@ -1,0 +1,66 @@
+{
+    "pixel_8": {
+        "manufacturer": "Google",
+        "model": "Pixel 8",
+        "board": "shiba",
+        "device": "husky",
+        "android_version": "14",
+        "build_id": "UD1A.230803.022"
+    },
+    "pixel_7_pro": {
+        "manufacturer": "Google",
+        "model": "Pixel 7 Pro",
+        "board": "cheetah",
+        "device": "cheetah",
+        "android_version": "13",
+        "build_id": "TD1A.220804.031"
+    },
+    "samsung_s23_ultra": {
+        "manufacturer": "Samsung",
+        "model": "SM-S918B",
+        "board": "kalama",
+        "device": "dm3q",
+        "android_version": "13",
+        "build_id": "TP1A.220624.014"
+    },
+    "samsung_s22": {
+        "manufacturer": "Samsung",
+        "model": "SM-S901B",
+        "board": "s5e9925",
+        "device": "r0s",
+        "android_version": "13",
+        "build_id": "TP1A.220624.014"
+    },
+    "moto_g_power": {
+        "manufacturer": "Motorola",
+        "model": "Moto G Power (2022)",
+        "board": "tonga",
+        "device": "tonga",
+        "android_version": "11",
+        "build_id": "RRZS31.Q3-56-87-2"
+    },
+    "oneplus_11": {
+        "manufacturer": "OnePlus",
+        "model": "CPH2449",
+        "board": "kalama",
+        "device": "salami",
+        "android_version": "13",
+        "build_id": "CPH2449_11_A.09"
+    },
+    "xiaomi_redmi_note_12": {
+        "manufacturer": "Xiaomi",
+        "model": "23021RAAEG",
+        "board": "topaz",
+        "device": "topaz",
+        "android_version": "13",
+        "build_id": "TKQ1.221114.001"
+    },
+    "sony_xperia_1_v": {
+        "manufacturer": "Sony",
+        "model": "XQ-DQ54",
+        "board": "kalama",
+        "device": "pdx234",
+        "android_version": "13",
+        "build_id": "67.0.A.4.22"
+    }
+}

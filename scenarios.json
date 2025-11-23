@@ -1,0 +1,251 @@
+{
+    "profiles": {
+        "General Use": ["default", "weekend_plans", "lunch_sushi", "late_checkin", "weather_chat", "grocery_run", "family_update", "movie_night"],
+        "Corporate Espionage": ["project_kickoff", "budget_review", "lunch_sushi", "confidential_leak", "competitor_intel", "server_access"],
+        "Infidelity": ["weekend_plans", "lunch_sushi", "late_checkin", "secret_meetup", "late_night_call", "gift_cover"],
+        "Drug Trafficking": ["default", "weekend_plans", "package_drop", "supply_chain", "quality_check", "new_supplier"],
+        "Money Laundering": ["crypto_mix", "shell_company", "bank_structuring", "cash_drop", "art_auction"],
+        "Cyberstalking": ["location_tracking", "photo_leak", "threat_message", "routine_check", "social_engineering"],
+        "Insider Trading": ["stock_tip", "merger_news", "dump_shares", "earnings_leak", "regulator_alert"],
+        "Identity Theft": ["credit_card_drop", "fake_id_request", "dump_listing", "passport_scan", "sim_swap"]
+    },
+    "first_names": [
+        "James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles", 
+        "Christopher", "Daniel", "Matthew", "Anthony", "Donald", "Mark", "Paul", "Steven", "Andrew", "Kenneth", 
+        "Mary", "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Karen", 
+        "Nancy", "Lisa", "Margaret", "Betty", "Sandra", "Ashley", "Dorothy", "Kimberly", "Emily", "Donna", 
+        "Michelle", "Carol", "Amanda", "Melissa", "Deborah", "Stephanie", "Rebecca", "Laura", "Sharon", "Cynthia",
+        "Liam", "Noah", "Oliver", "Elijah", "Lucas", "Mason", "Logan", "Ethan", "Jacob", "Michael",
+        "Olivia", "Emma", "Ava", "Sophia", "Isabella", "Mia", "Amelia", "Harper", "Evelyn", "Abigail"
+    ],
+    "last_names": [
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", 
+        "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", 
+        "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", 
+        "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores", "Green", 
+        "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts",
+        "Kim", "Patel", "Singh", "Chen", "Wong", "Gupta", "Silva", "Santos", "Cohen", "Levy"
+    ],
+    "conversations": {
+        "grocery_run": [
+            {"role": "Partner", "content": "Heading to the store. Need anything?"},
+            {"role": "Owner", "content": "Milk and eggs."},
+            {"role": "Owner", "content": "Oh, and grab some coffee."},
+            {"role": "Partner", "content": "Got it. Be back in 30."}
+        ],
+        "family_update": [
+            {"role": "Owner", "content": "Did you hear from mom?"},
+            {"role": "Partner", "content": "She called earlier. Surgery went well."},
+            {"role": "Owner", "content": "Great news. I'll visit on Sunday."},
+            {"role": "Partner", "content": "Bring the kids."}
+        ],
+        "movie_night": [
+            {"role": "Partner", "content": "Have you seen the new sci-fi series?"},
+            {"role": "Owner", "content": "Not yet. No spoilers!"},
+            {"role": "Partner", "content": "It's amazing. Come over and watch?"},
+            {"role": "Owner", "content": "Sure, I'll bring popcorn."}
+        ],
+        "competitor_intel": [
+            {"role": "Owner", "content": "Their pricing model leaked."},
+            {"role": "Partner", "content": "Is it reliable?"},
+            {"role": "Owner", "content": "Q2_Competitor_Pricing.pdf"},
+            {"role": "Partner", "content": "This changes our entire bid strategy."}
+        ],
+        "server_access": [
+            {"role": "Partner", "content": "I need admin rights for the weekend."},
+            {"role": "Owner", "content": "Against policy without a ticket."},
+            {"role": "Partner", "content": "Just for 2 hours. I'll owe you."},
+            {"role": "Owner", "content": "Fine. Don't make me regret this."}
+        ],
+        "late_night_call": [
+            {"role": "Owner", "content": "Can you talk?"},
+            {"role": "Partner", "content": "Not now, he's still awake."},
+            {"role": "Owner", "content": "Just wanted to hear your voice."},
+            {"role": "Partner", "content": "I'll call you from the car tomorrow."}
+        ],
+        "gift_cover": [
+            {"role": "Partner", "content": "Why is there a charge for a diamond necklace?"},
+            {"role": "Owner", "content": "It's... for your birthday next month."},
+            {"role": "Partner", "content": "Oh. Sorry for snooping."},
+            {"role": "Owner", "content": "Don't worry about it."}
+        ],
+        "quality_check": [
+            {"role": "Partner", "content": "Customers are complaining about the last batch."},
+            {"role": "Owner", "content": "It's the same source."},
+            {"role": "Partner", "content": "It's weak. Fix it or we lose the territory."},
+            {"role": "Owner", "content": "I'll talk to the cook."}
+        ],
+        "new_supplier": [
+            {"role": "Owner", "content": "Found a guy in Miami."},
+            {"role": "Partner", "content": "Can he move volume?"},
+            {"role": "Owner", "content": "Unlimited supply. Good prices."},
+            {"role": "Partner", "content": "Set up a meet."}
+        ],
+        "cash_drop": [
+            {"role": "Partner", "content": "Bag is in the locker. Gym on 5th."},
+            {"role": "Owner", "content": "Combination?"},
+            {"role": "Partner", "content": "15-32-08."},
+            {"role": "Owner", "content": "Retrieving it now."}
+        ],
+        "art_auction": [
+            {"role": "Owner", "content": "The painting sold for 2M."},
+            {"role": "Partner", "content": "Clean money?"},
+            {"role": "Owner", "content": "Fully documented sale to an overseas buyer."},
+            {"role": "Partner", "content": "Excellent work."}
+        ],
+        "routine_check": [
+            {"role": "Owner", "content": "Just checking in."},
+            {"role": "Partner", "content": "Who is this?"},
+            {"role": "Owner", "content": "You looked nice in the blue dress today."},
+            {"role": "Partner", "content": "I'm calling the police."}
+        ],
+        "social_engineering": [
+            {"role": "Owner", "content": "Hi, this is IT support. We detected a login issue."},
+            {"role": "Partner", "content": "Oh, really? What do I need to do?"},
+            {"role": "Owner", "content": "Just verify your 2FA code for me."},
+            {"role": "Partner", "content": "Is that safe?"}
+        ],
+        "earnings_leak": [
+            {"role": "Partner", "content": "Numbers are way down. Revenue missed by 20%."},
+            {"role": "Owner", "content": "When does the report go public?"},
+            {"role": "Partner", "content": "Tuesday at 4 PM."},
+            {"role": "Owner", "content": "Shorting the stock now."}
+        ],
+        "regulator_alert": [
+            {"role": "Owner", "content": "SEC is asking questions."},
+            {"role": "Partner", "content": "About the trades?"},
+            {"role": "Owner", "content": "About the timing. Wipe your phone."},
+            {"role": "Partner", "content": "Already done."}
+        ],
+        "passport_scan": [
+            {"role": "Owner", "content": "Client needs a UK passport."},
+            {"role": "Partner", "content": "I have a clean template."},
+            {"role": "Owner", "content": "target_photo.jpg"},
+            {"role": "Partner", "content": "Will have it printed by Friday."}
+        ],
+        "sim_swap": [
+            {"role": "Partner", "content": "Port out request initiated."},
+            {"role": "Owner", "content": "Did the carrier approve?"},
+            {"role": "Partner", "content": "Yes, we have control of the number."},
+            {"role": "Owner", "content": "Resetting the bank passwords now."}
+        ],
+        "late_checkin": [
+            {"role": "Partner", "content": "Where are you?"},
+            {"role": "Owner", "content": "Running late, be there by {time}."},
+            {"role": "Partner", "content": "Ok hurry."}
+        ],
+        "project_kickoff": [
+            {"role": "Owner", "content": "Here is the initial scope."}, 
+            {"role": "Owner", "content": "project_scope_v1.docx"}, 
+            {"role": "Partner", "content": "Thanks, reviewing tonight."}, 
+            {"role": "Partner", "content": "kickoff_slides.pptx"}, 
+            {"role": "Owner", "content": "Perfect."}
+        ],
+        "budget_review": [
+            {"role": "Partner", "content": "Did you see the budget variances?"}, 
+            {"role": "Partner", "content": "Q3_budget_analysis.xlsx"}, 
+            {"role": "Owner", "content": "Travel expenses are high."}, 
+            {"role": "Partner", "content": "Vegas conference cost a lot."}
+        ],
+        "lunch_sushi": [
+            {"role": "Owner", "content": "Sushi?"}, 
+            {"role": "Partner", "content": "Always."}, 
+            {"role": "Owner", "content": "Lobby 12:30."}, 
+            {"role": "Partner", "content": "K."}
+        ],
+        "weekend_plans": [
+            {"role": "Partner", "content": "Weekend plans?"}, 
+            {"role": "Owner", "content": "Movies."}, 
+            {"role": "Partner", "content": "Nice."}
+        ],
+        "default": [
+            {"role": "Owner", "content": "Hello"}, 
+            {"role": "Partner", "content": "Hi"}
+        ],
+        "weather_chat": [
+            {"role": "Owner", "content": "Looks like rain today."},
+            {"role": "Partner", "content": "Yeah, bring an umbrella."},
+            {"role": "Owner", "content": "Will do."}
+        ],
+        "confidential_leak": [
+            {"role": "Partner", "content": "Did you get the files?"},
+            {"role": "Owner", "content": "Transferring now. Keep this offline."},
+            {"role": "Owner", "content": "Q4_Projections_CONFIDENTIAL.pdf"},
+            {"role": "Partner", "content": "Received. Deleting this chat."}
+        ],
+        "secret_meetup": [
+            {"role": "Owner", "content": "Are they gone?"},
+            {"role": "Partner", "content": "Yes, coast is clear."},
+            {"role": "Owner", "content": "See you at the usual spot at {time}."},
+            {"role": "Partner", "content": "Can't wait."}
+        ],
+        "package_drop": [
+            {"role": "Partner", "content": "Package is at the drop point."},
+            {"role": "Owner", "content": "Confirmed. Is it clean?"},
+            {"role": "Partner", "content": "Yes, typical route."},
+            {"role": "Owner", "content": "location_map_v2.jpg"}
+        ],
+        "supply_chain": [
+            {"role": "Owner", "content": "Supplier is asking for more upfront."},
+            {"role": "Partner", "content": "Tell them standard terms or we walk."},
+            {"role": "Owner", "content": "They have the product we need."},
+            {"role": "Partner", "content": "Fine. Pay half."}
+        ],
+        "crypto_mix": [
+            {"role": "Owner", "content": "Tumbler isn't working."},
+            {"role": "Partner", "content": "Try a different node. Need to wash this by morning."},
+            {"role": "Owner", "content": "wallet_keys.txt"},
+            {"role": "Partner", "content": "Moving to cold storage."}
+        ],
+        "shell_company": [
+            {"role": "Partner", "content": "LLC registration is complete."},
+            {"role": "Owner", "content": "Good. Funnel the first batch through the consulting firm."},
+            {"role": "Partner", "content": "invoice_consulting_fees.pdf"}
+        ],
+        "bank_structuring": [
+            {"role": "Owner", "content": "Deposit 9k only. Don't trigger the CTR."},
+            {"role": "Partner", "content": "Understood. Hitting three branches today."},
+            {"role": "Owner", "content": "Keep receipts separate."}
+        ],
+        "location_tracking": [
+            {"role": "Owner", "content": "I know you're at that cafe."},
+            {"role": "Partner", "content": "Stop following me."},
+            {"role": "Owner", "content": "I see who you're with."},
+            {"role": "Owner", "content": "IMG_20231024_stalk.jpg"}
+        ],
+        "photo_leak": [
+            {"role": "Owner", "content": "Would be a shame if these got out."},
+            {"role": "Owner", "content": "private_archive.zip"},
+            {"role": "Partner", "content": "What do you want?"},
+            {"role": "Owner", "content": "We can discuss at {time}."}
+        ],
+        "threat_message": [
+            {"role": "Owner", "content": "Watch your back."},
+            {"role": "Partner", "content": "Leave me alone."},
+            {"role": "Owner", "content": "Not until you pay up."}
+        ],
+        "stock_tip": [
+            {"role": "Partner", "content": "Announcement goes live tomorrow AM."},
+            {"role": "Owner", "content": "Sure? I'm putting everything in."},
+            {"role": "Partner", "content": "100%. FDA approval is secured."},
+            {"role": "Owner", "content": "Buying calls now."}
+        ],
+        "merger_news": [
+            {"role": "Owner", "content": "Merger is off. Sell before close."},
+            {"role": "Partner", "content": "Are you serious?"},
+            {"role": "Owner", "content": "CEO just walked out. Dump it."}
+        ],
+        "credit_card_drop": [
+            {"role": "Partner", "content": "Fresh batch of CVVs available."},
+            {"role": "Owner", "content": "Send the sample."},
+            {"role": "Partner", "content": "dump_100_cards.csv"},
+            {"role": "Owner", "content": "Looks valid. How much?"}
+        ],
+        "fake_id_request": [
+            {"role": "Owner", "content": "Need a new license. State of Delaware."},
+            {"role": "Partner", "content": "Send photo and stats."},
+            {"role": "Owner", "content": "headshot_v1.jpg"},
+            {"role": "Partner", "content": "Ready in 3 days."}
+        ]
+    }
+}
