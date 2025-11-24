@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import logging
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 from faker import Faker
 from datetime import datetime, timedelta
 
@@ -18,19 +18,290 @@ except ImportError:
     PIL_AVAILABLE = False
 
 from core.file_system import AndroidFileSystem
+from core.db_manager import SQLiteDB
 
 class SystemEngine:
-    def __init__(self, fs: AndroidFileSystem, logger: logging.Logger):
+    def __init__(self, fs: AndroidFileSystem, logger: logging.Logger, device_profile: Optional[Dict] = None):
         self.fs = fs
         self.logger = logger
         self.fake = Faker()
+        self.profile = device_profile or {
+            "manufacturer": "Google",
+            "model": "Pixel 8",
+            "board": "shiba",
+            "device": "husky",
+            "android_version": "14",
+            "build_id": "UD1A.230803.022"
+        }
 
     def _prettify_xml(self, elem) -> str:
         rough_string = ET.tostring(elem, 'utf-8')
         reparsed = minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="  ")
 
-    # --- CORE SYSTEM METHODS ---
+    def generate_build_prop(self):
+        path = self.fs.get_path("root") / "system"
+        path.mkdir(parents=True, exist_ok=True)
+        
+        # Generate random Serial Number (8-12 chars)
+        serial_no = self.fake.bothify(text="????????").upper()
+        
+        # Generate Primary IMEI (15 digits)
+        imei1 = str(self.fake.random_number(digits=15))
+        
+        # Generate Secondary IMEI (Dual SIM) - 70% chance
+        imei2 = ""
+        if random.random() < 0.7:
+            imei2 = f"\ngsm.imei2={self.fake.random_number(digits=15)}"
+
+        content = f"""
+# build properties
+ro.build.id={self.profile.get('build_id', 'UNKNOWN')}
+ro.build.display.id={self.profile.get('build_id', 'UNKNOWN')}
+ro.build.version.incremental={random.randint(1000000, 9999999)}
+ro.build.version.sdk={self.profile.get('android_version', '10')}
+ro.build.version.release={self.profile.get('android_version', '10')}
+ro.product.brand={self.profile.get('manufacturer', 'Generic')}
+ro.product.model={self.profile.get('model', 'Generic Phone')}
+ro.product.board={self.profile.get('board', 'generic_board')}
+ro.product.device={self.profile.get('device', 'generic_device')}
+ro.product.manufacturer={self.profile.get('manufacturer', 'Generic')}
+ro.board.platform={self.profile.get('board', 'platform')}
+# Identifiers
+ro.serialno={serial_no}
+gsm.version.baseband={self.profile.get('board', 'generic')}-123456-7890
+gsm.imei={imei1}{imei2}
+"""
+        try:
+            with open(path / "build.prop", "w") as f: f.write(content.strip())
+        except OSError as e: self.logger.error(f"Build Prop Error: {e}")
+
+    def generate_packages_xml(self, installed_apps: Dict[str, str], start_time_ts: float):
+        """
+        Generates packages.xml with randomized installation dates.
+        """
+        root = ET.Element("packages")
+        ET.SubElement(root, "version", sdkVersion=self.profile.get("android_version", "13"), databaseVersion="3")
+        
+        sorted_items = sorted(installed_apps.items(), key=lambda x: x[1])
+        
+        for i, (name, pkg) in enumerate(sorted_items):
+            uid = 10000 + i
+            
+            # Logic for Install Date:
+            # Native apps (com.android.*, com.google.*) -> often install at "Setup Wizard" time (start_time_ts)
+            # Third party apps -> installed randomly AFTER start time
+            if "com.android" in pkg or "com.google" in pkg:
+                install_ts = start_time_ts
+            else:
+                random_offset = random.randint(0, 30 * 24 * 3600) 
+                install_ts = start_time_ts + random_offset
+
+            ET.SubElement(root, "package", name=pkg, codePath=f"/data/app/{pkg}-1", userId=str(uid), it=str(int(install_ts*1000)))
+            
+        path = self.fs.get_path("system") / "packages.xml"
+        try:
+            with open(path, "w") as f: f.write(self._prettify_xml(root))
+        except OSError as e: self.logger.error(f"Packages XML Error: {e}")
+
+    def generate_play_store_data(self, owner_email: str, installed_apps: Dict[str, str]):
+        """
+        Generates Google Play Store artifacts (library.db) linking apps to the account.
+        """
+        path = self.fs.get_path("data") / "com.android.vending" / "databases"
+        path.mkdir(parents=True, exist_ok=True)
+        db_path = path / "library.db"
+
+        with SQLiteDB(db_path, self.logger) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS ownership (
+                account TEXT, 
+                doc_id TEXT, 
+                purchase_time_ms INTEGER, 
+                preordered INTEGER
+            )""")
+            
+            for pkg in installed_apps.values():
+                # Random purchase time in the last 2 years
+                purchase_ts = int((datetime.now() - timedelta(days=random.randint(5, 700))).timestamp() * 1000)
+                c.execute("INSERT INTO ownership (account, doc_id, purchase_time_ms, preordered) VALUES (?, ?, ?, ?)", 
+                          (owner_email, pkg, purchase_ts, 0))
+
+        path_local = self.fs.get_path("data") / "com.android.vending" / "databases"
+        db_local = path_local / "localappstate.db"
+        with SQLiteDB(db_local, self.logger) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS appstate (
+                package_name TEXT PRIMARY KEY, 
+                auto_update INTEGER, 
+                last_update_timestamp_ms INTEGER
+            )""")
+            for pkg in installed_apps.values():
+                update_ts = int((datetime.now() - timedelta(days=random.randint(1, 30))).timestamp() * 1000)
+                c.execute("INSERT INTO appstate (package_name, auto_update, last_update_timestamp_ms) VALUES (?, ?, ?)", 
+                          (pkg, 1, update_ts))
+
+    def generate_modern_accounts_db(self, owner_email: str, installed_apps: Dict[str, str]):
+        """
+        Generates split DE/CE account databases found in Android 7+.
+        """
+        path_de = self.fs.get_path("system_de") / "0"
+        path_ce = self.fs.get_path("system_ce") / "0"
+        path_de.mkdir(parents=True, exist_ok=True)
+        path_ce.mkdir(parents=True, exist_ok=True)
+
+        db_de = path_de / "accounts_de.db"
+        db_ce = path_ce / "accounts_ce.db"
+
+        accounts = []
+        accounts.append({
+            "name": owner_email,
+            "type": "com.google",
+            "password": None,
+            "userdata": {"sub": self.fake.uuid4(), "given_name": owner_email.split('@')[0]}
+        })
+
+        username_base = owner_email.split('@')[0]
+        for app_name, pkg in installed_apps.items():
+            if "whatsapp" in pkg: 
+                accounts.append({"name": self.fake.phone_number(), "type": "com.whatsapp", "userdata": {"push_name": username_base}})
+            elif "telegram" in pkg:
+                accounts.append({"name": self.fake.phone_number(), "type": "org.telegram.messenger", "userdata": {}})
+            elif "facebook" in pkg:
+                accounts.append({"name": self.fake.uuid4(), "type": "com.facebook.auth.login", "userdata": {"access_token": self.fake.sha1()}})
+            elif "twitter" in pkg:
+                accounts.append({"name": f"@{username_base}", "type": "com.twitter.android.auth.login", "userdata": {}})
+
+        with SQLiteDB(db_de, self.logger) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS accounts (
+                _id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                name TEXT NOT NULL, 
+                type TEXT NOT NULL, 
+                password TEXT, 
+                previous_name TEXT, 
+                last_password_entry_time_millis_epoch INTEGER DEFAULT 0
+            )""")
+            c.execute("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY NOT NULL, value TEXT)")
+            c.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", ("android_version", self.profile.get("android_version")))
+
+            for acc in accounts:
+                c.execute("INSERT INTO accounts (name, type) VALUES (?, ?)", (acc['name'], acc['type']))
+                acc['_id'] = c.lastrowid 
+
+        with SQLiteDB(db_ce, self.logger) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS accounts (
+                _id INTEGER PRIMARY KEY, 
+                name TEXT NOT NULL, 
+                type TEXT NOT NULL, 
+                password TEXT
+            )""")
+            c.execute("""CREATE TABLE IF NOT EXISTS authtokens (
+                _id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                accounts_id INTEGER, 
+                type TEXT, 
+                authtoken TEXT, 
+                FOREIGN KEY(accounts_id) REFERENCES accounts(_id)
+            )""")
+            c.execute("""CREATE TABLE IF NOT EXISTS extras (
+                _id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                accounts_id INTEGER, 
+                key TEXT, 
+                value TEXT, 
+                FOREIGN KEY(accounts_id) REFERENCES accounts(_id)
+            )""")
+
+            for acc in accounts:
+                c.execute("INSERT INTO accounts (_id, name, type) VALUES (?, ?, ?)", (acc['_id'], acc['name'], acc['type']))
+                token_type = f"weblogin:{acc['type']}"
+                fake_token = self.fake.sha256()
+                c.execute("INSERT INTO authtokens (accounts_id, type, authtoken) VALUES (?, ?, ?)", 
+                          (acc['_id'], token_type, fake_token))
+                for k, v in acc.get("userdata", {}).items():
+                    c.execute("INSERT INTO extras (accounts_id, key, value) VALUES (?, ?, ?)", 
+                              (acc['_id'], k, v))
+
+    def generate_packages_list(self, installed_apps: Dict[str, str]):
+        path = self.fs.get_path("system")
+        path.mkdir(parents=True, exist_ok=True)
+        lines = []
+        sorted_apps = sorted(installed_apps.items(), key=lambda x: x[1])
+        for i, (name, pkg) in enumerate(sorted_apps):
+            uid = 10000 + i
+            line = f"{pkg} {uid} 0 /data/user/0/{pkg} default:targetSdkVersion=33 3003"
+            lines.append(line)
+        try:
+            with open(path / "packages.list", "w") as f:
+                f.write("\n".join(lines))
+        except OSError: pass
+
+    def generate_anr_artifacts(self):
+        path = self.fs.get_path("anr")
+        path.mkdir(parents=True, exist_ok=True)
+        trace_content = f"""
+----- pid 1234 at {datetime.now()} -----
+Cmd line: com.google.android.youtube
+"main" prio=5 tid=1 Native
+  | group="main" sCount=1 dsCount=0 flags=1 obj=0x7368c880 self=0x7b44615c00
+  | sysTid=1234 nice=-10 cgrp=default sched=0/0 handle=0x7b4580b4f8
+  | state=S schedstat=( 58682969 13548958 128 ) utm=4 stm=1 core=5 HZ=100
+  | stack=0x7fe6e69000-0x7fe6e6b000 stackSize=8MB
+  | held mutexes=
+  native: #00 pc 000000000004a4bc  /system/lib64/libc.so (syscall+28)
+  native: #01 pc 00000000000e4708  /system/lib64/libart.so (art::ConditionVariable::Wait(art::Thread*)+140)
+  at com.android.server.am.ActivityManagerService.broadcastIntent(ActivityManagerService.java:14560)
+"""
+        try:
+            with open(path / "traces.txt", "w") as f:
+                f.write(trace_content.strip())
+        except OSError: pass
+
+    def generate_tombstones(self):
+        path = self.fs.get_path("tombstones")
+        path.mkdir(parents=True, exist_ok=True)
+        for i in range(3):
+            ts = datetime.now() - timedelta(days=random.randint(0, 5))
+            content = f"""*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Build fingerprint: '{self.profile.get('manufacturer')}/{self.profile.get('device')}/{self.profile.get('device')}:14/{self.profile.get('build_id')}/10808092:user/release-keys'
+Revision: '0'
+ABI: 'arm64'
+Timestamp: {ts}
+pid: {random.randint(1000, 9999)}, tid: {random.randint(1000, 9999)}, name: RenderThread  >>> com.instagram.android <<<
+signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0
+x0  0000000000000000  x1  00000076a43f8000  x2  0000000000000000  x3  0000000000000000
+x4  0000000000000000  x5  0000000000000000  x6  0000000000000000  x7  0000000000000000
+"""
+            try:
+                with open(path / f"tombstone_{i:02d}", "w") as f:
+                    f.write(content)
+            except OSError: pass
+
+    def generate_dalvik_cache(self, installed_apps: Dict[str, str]):
+        path = self.fs.get_path("dalvik_cache") / "arm64"
+        path.mkdir(parents=True, exist_ok=True)
+        dex_magic = b"dex\n035\x00"
+        for pkg in installed_apps.values():
+            rand_suffix = self.fake.bothify(text="##====")
+            fname = f"data@app@@{pkg}-{rand_suffix}==@base.apk@classes.dex"
+            try:
+                with open(path / fname, "wb") as f:
+                    f.write(dex_magic)
+                    f.write(os.urandom(1024 * 50)) 
+            except OSError: pass
+
+    def generate_app_dir_structure(self, installed_apps: Dict[str, str]):
+        app_root = self.fs.get_path("app")
+        for pkg in installed_apps.values():
+            folder_name = f"{pkg}-{self.fake.bothify(text='????==')}"
+            app_dir = app_root / folder_name
+            app_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                with open(app_dir / "base.apk", "wb") as f:
+                    f.write(b"PK\x03\x04") 
+                    f.write(os.urandom(1024 * 10)) 
+                oat_dir = app_dir / "oat" / "arm64"
+                oat_dir.mkdir(parents=True, exist_ok=True)
+                with open(oat_dir / "base.odex", "wb") as f:
+                    f.write(os.urandom(1024))
+            except OSError: pass
+
     def generate_wifi_config(self, ssids: List[str] = None):
         if ssids is None: ssids = ["Home_Network", "Starbucks_WiFi", "Airport_Free_Wifi"]
         root = ET.Element("WifiConfigStoreData")
@@ -42,39 +313,21 @@ class SystemEngine:
         path = self.fs.get_path("wifi") / "WifiConfigStore.xml"
         try:
             with open(path, "w") as f: f.write(self._prettify_xml(root))
-        except OSError: pass
+        except OSError as e: self.logger.error(f"Wifi Config Error: {e}")
 
     def generate_accounts_db(self, owner_email: str, installed_apps: Dict[str, str]):
-        path = self.fs.get_path("system_users")
-        path.mkdir(parents=True, exist_ok=True)
-        db_path = path / "accounts.db"
-        username_base = owner_email.split('@')[0]
-        try:
-            with sqlite3.connect(db_path) as conn:
-                c = conn.cursor()
-                c.execute("CREATE TABLE IF NOT EXISTS accounts (_id INTEGER PRIMARY KEY, name TEXT, type TEXT)")
-                c.execute("INSERT INTO accounts (name, type) VALUES (?, ?)", (owner_email, "com.google"))
-                for app_name, pkg in installed_apps.items():
-                    account_type, account_name = None, None
-                    if "whatsapp" in pkg: account_type, account_name = "com.whatsapp", self.fake.phone_number()
-                    elif "telegram" in pkg: account_type, account_name = "org.telegram.messenger", self.fake.phone_number()
-                    elif "instagram" in pkg: account_type, account_name = "com.instagram", f"{username_base}_{random.randint(10,99)}"
-                    elif "facebook" in pkg: account_type, account_name = "com.facebook.auth.login", owner_email
-                    elif "twitter" in pkg: account_type, account_name = "com.twitter.android.auth.login", f"@{username_base}"
-                    if account_type: c.execute("INSERT INTO accounts (name, type) VALUES (?, ?)", (account_name, account_type))
-                conn.commit()
-        except sqlite3.Error: pass
-
-    def generate_packages_xml(self, installed_apps: Dict[str, str], install_time_ts: float):
-        root = ET.Element("packages")
-        sorted_items = sorted(installed_apps.items(), key=lambda x: x[1])
-        for i, (name, pkg) in enumerate(sorted_items):
-            uid = 10000 + i
-            ET.SubElement(root, "package", name=pkg, codePath=f"/data/app/{pkg}-1", userId=str(uid), it=str(int(install_time_ts*1000)))
-        path = self.fs.get_path("system") / "packages.xml"
-        try:
-            with open(path, "w") as f: f.write(self._prettify_xml(root))
-        except OSError: pass
+        """Legacy Account Generation"""
+        db_path = self.fs.get_path("system_users") / "accounts.db"
+        with SQLiteDB(db_path, self.logger) as c:
+            c.execute("CREATE TABLE IF NOT EXISTS accounts (_id INTEGER PRIMARY KEY, name TEXT, type TEXT)")
+            c.execute("INSERT INTO accounts (name, type) VALUES (?, ?)", (owner_email, "com.google"))
+            for app_name, pkg in installed_apps.items():
+                account_type, account_name = None, None
+                if "whatsapp" in pkg: account_type, account_name = "com.whatsapp", self.fake.phone_number()
+                elif "telegram" in pkg: account_type, account_name = "org.telegram.messenger", self.fake.phone_number()
+                elif "instagram" in pkg: account_type, account_name = "com.instagram", self.fake.user_name()
+                if account_type:
+                    c.execute("INSERT INTO accounts (name, type) VALUES (?, ?)", (account_name, account_type))
 
     def generate_json_artifacts(self, installed_apps: Dict[str, str]):
         data_root = self.fs.get_path("data")
@@ -88,6 +341,7 @@ class SystemEngine:
                 "username": self.fake.user_name(),
                 "is_active": True,
                 "last_login": str(datetime.now()),
+                "device": self.profile.get("model", "Generic"),
                 "preferences": {"theme": "dark", "notifications_enabled": True}
             }
             try:
@@ -124,20 +378,16 @@ class SystemEngine:
 
     def generate_digital_wellbeing(self, installed_apps: Dict[str, str]):
         path = self.fs.get_path("data") / "com.google.android.apps.wellbeing" / "databases"
-        path.mkdir(parents=True, exist_ok=True)
-        try:
-            with sqlite3.connect(path / "app_usage.db") as conn:
-                c = conn.cursor()
-                c.execute("CREATE TABLE IF NOT EXISTS events (_id INTEGER PRIMARY KEY, timestamp INTEGER, package_name TEXT, type INTEGER)")
-                pkgs = list(installed_apps.values())
-                if not pkgs: pkgs = ["com.android.chrome"]
-                start_ts = int((datetime.now() - timedelta(days=1)).timestamp() * 1000)
-                for i in range(50):
-                    ts = start_ts + (i * 1000 * 60 * random.randint(10, 60))
-                    pkg = random.choice(pkgs)
-                    c.execute("INSERT INTO events (timestamp, package_name, type) VALUES (?, ?, ?)", (ts, pkg, 1))
-                conn.commit()
-        except sqlite3.Error: pass
+        db_path = path / "app_usage.db"
+        with SQLiteDB(db_path, self.logger) as c:
+            c.execute("CREATE TABLE IF NOT EXISTS events (_id INTEGER PRIMARY KEY, timestamp INTEGER, package_name TEXT, type INTEGER)")
+            pkgs = list(installed_apps.values())
+            if not pkgs: pkgs = ["com.android.chrome"]
+            start_ts = int((datetime.now() - timedelta(days=1)).timestamp() * 1000)
+            for i in range(50):
+                ts = start_ts + (i * 1000 * 60 * random.randint(10, 60))
+                pkg = random.choice(pkgs)
+                c.execute("INSERT INTO events (timestamp, package_name, type) VALUES (?, ?, ?)", (ts, pkg, 1))
 
     def generate_runtime_permissions(self, installed_apps: Dict[str, str]):
         path = self.fs.get_path("system_users"); path.mkdir(parents=True, exist_ok=True)
@@ -173,17 +423,13 @@ class SystemEngine:
             except OSError: pass
 
     def generate_notification_history(self, messages: List[Dict]):
-        path = self.fs.get_path("system"); path.mkdir(parents=True, exist_ok=True)
-        try:
-            with sqlite3.connect(path / "notification_log.db") as conn:
-                c = conn.cursor()
-                c.execute("CREATE TABLE IF NOT EXISTS log (_id INTEGER PRIMARY KEY, package_name TEXT, post_time INTEGER, title TEXT, text TEXT)")
-                for msg in messages[-20:]:
-                    pkg = "com.whatsapp" if "WhatsApp" in msg.get('Platform', '') else "com.google.android.apps.messaging"
-                    ts = int(datetime.strptime(msg['Timestamp'], "%Y-%m-%d %H:%M:%S").timestamp() * 1000)
-                    c.execute("INSERT INTO log (package_name, post_time, title, text) VALUES (?, ?, ?, ?)", (pkg, ts, msg['Sender'], msg['Body']))
-                conn.commit()
-        except sqlite3.Error: pass
+        path = self.fs.get_path("system") / "notification_log.db"
+        with SQLiteDB(path, self.logger) as c:
+            c.execute("CREATE TABLE IF NOT EXISTS log (_id INTEGER PRIMARY KEY, package_name TEXT, post_time INTEGER, title TEXT, text TEXT)")
+            for msg in messages[-20:]:
+                pkg = "com.whatsapp" if "WhatsApp" in msg.get('Platform', '') else "com.google.android.apps.messaging"
+                ts = int(datetime.strptime(msg['Timestamp'], "%Y-%m-%d %H:%M:%S").timestamp() * 1000)
+                c.execute("INSERT INTO log (package_name, post_time, title, text) VALUES (?, ?, ?, ?)", (pkg, ts, msg['Sender'], msg['Body']))
 
     def generate_wifi_scan_logs(self, geo_points: List[Dict]):
         path = self.fs.get_path("misc") / "wifi"; path.mkdir(parents=True, exist_ok=True)
@@ -248,26 +494,37 @@ class SystemEngine:
         except: pass
 
     def generate_lock_settings(self):
-        path = self.fs.get_path("system"); path.mkdir(parents=True, exist_ok=True)
+        path = self.fs.get_path("system") / "locksettings.db"
+        with SQLiteDB(path, self.logger) as c:
+            c.execute("CREATE TABLE IF NOT EXISTS locksettings (_id INTEGER PRIMARY KEY, name TEXT, user INTEGER, value TEXT)")
+            c.execute("INSERT INTO locksettings (name, user, value) VALUES (?, ?, ?)", ("lockscreen.password_type", 0, "131072"))
+            c.execute("INSERT INTO locksettings (name, user, value) VALUES (?, ?, ?)", ("lockscreen.disabled", 0, "0"))
+            c.execute("INSERT INTO locksettings (name, user, value) VALUES (?, ?, ?)", ("lockscreen.password_salt", 0, self.fake.hexify(text="^" * 16)))
+        
         try:
-            with sqlite3.connect(path / "locksettings.db") as conn:
-                c = conn.cursor()
-                c.execute("CREATE TABLE IF NOT EXISTS locksettings (_id INTEGER PRIMARY KEY, name TEXT, user INTEGER, value TEXT)")
-                c.execute("INSERT INTO locksettings (name, user, value) VALUES (?, ?, ?)", ("lockscreen.password_type", 0, "131072"))
-                c.execute("INSERT INTO locksettings (name, user, value) VALUES (?, ?, ?)", ("lockscreen.disabled", 0, "0"))
-                c.execute("INSERT INTO locksettings (name, user, value) VALUES (?, ?, ?)", ("lockscreen.password_salt", 0, self.fake.hexify(text="^" * 16)))
-                conn.commit()
-        except sqlite3.Error: pass
-        try:
-            with open(path / "gatekeeper.password.key", "wb") as f: f.write(os.urandom(64))
+            with open(path.parent / "gatekeeper.password.key", "wb") as f: f.write(os.urandom(64))
         except OSError: pass
 
     def generate_build_prop(self):
-        path = self.fs.get_path("root") / "system"; path.mkdir(parents=True, exist_ok=True)
-        content = "\n# build properties\nro.build.id=UQ1A.240105.004\nro.product.brand=google\nro.product.model=Pixel 8 Pro\nro.board.platform=zuma\n"
+        path = self.fs.get_path("root") / "system"
+        path.mkdir(parents=True, exist_ok=True)
+        content = f"""
+# build properties
+ro.build.id={self.profile.get('build_id', 'UNKNOWN')}
+ro.build.display.id={self.profile.get('build_id', 'UNKNOWN')}
+ro.build.version.incremental={random.randint(1000000, 9999999)}
+ro.build.version.sdk={self.profile.get('android_version', '10')}
+ro.build.version.release={self.profile.get('android_version', '10')}
+ro.product.brand={self.profile.get('manufacturer', 'Generic')}
+ro.product.model={self.profile.get('model', 'Generic Phone')}
+ro.product.board={self.profile.get('board', 'generic_board')}
+ro.product.device={self.profile.get('device', 'generic_device')}
+ro.product.manufacturer={self.profile.get('manufacturer', 'Generic')}
+ro.board.platform={self.profile.get('board', 'platform')}
+"""
         try:
             with open(path / "build.prop", "w") as f: f.write(content.strip())
-        except OSError: pass
+        except OSError as e: self.logger.error(f"Build Prop Error: {e}")
 
     def generate_secure_settings(self):
         path = self.fs.get_path("system_users"); path.mkdir(parents=True, exist_ok=True)
@@ -337,12 +594,7 @@ class SystemEngine:
             with open(secure_files / "My_Secret_Note.txt", "w") as f: f.write("Secret")
         except OSError: pass
 
-    # --- NEW: PIXEL PRIVATE SPACE ---
     def generate_pixel_private_space(self):
-        """
-        Feature: Creates artifacts for Android 15 'Private Space' (User 11).
-        """
-        # 1. Paths (User 11)
         private_root = self.fs.get_path("user_11") # /data/user/11
         private_files = private_root / "files"
         users_system_path = self.fs.get_path("system_users_base")
@@ -350,20 +602,16 @@ class SystemEngine:
         private_files.mkdir(parents=True, exist_ok=True)
         users_system_path.mkdir(parents=True, exist_ok=True)
 
-        # 2. User Profile XML (User 11)
-        # flags="32" often denotes a private/managed profile
         root = ET.Element("user", id="11", serialNumber="11", flags="32", created=str(int(datetime.now().timestamp()*1000)))
         ET.SubElement(root, "name").text = "Private Space"
         ET.SubElement(root, "profileGroupId").text = "0"
-        ET.SubElement(root, "userType").text = "android.os.usertype.profile.PRIVATE" # Valid Android 15 tag
+        ET.SubElement(root, "userType").text = "android.os.usertype.profile.PRIVATE" 
         
         try:
             with open(users_system_path / "11.xml", "w") as f:
                 f.write(self._prettify_xml(root))
         except OSError: pass
 
-        # 3. Private Artifacts
-        # Create a private Chrome download
         try:
             private_dl = private_root / "com.android.chrome" / "files" / "Download"
             private_dl.mkdir(parents=True, exist_ok=True)

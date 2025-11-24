@@ -3,12 +3,83 @@
     "default_first_name": "Aiden",
     "default_surname": "Smith",
     "native_apps": [
-        "Phone", "Messages (SMS)", "Chrome", "Contacts", "Camera", 
-        "Gallery", "Calendar", "Calculator", "Settings", 
-        "Pixel Launcher", "Google", "Maps", "Digital Wellbeing"
+        "Phone", "Messages (SMS)", "Contacts", "Camera", "Gallery", 
+        "Calendar", "Calculator", "Settings", "Pixel Launcher", "Digital Wellbeing",
+        "Google Play Store", "Google Play Services", "Gmail", "Google Maps", 
+        "Google Photos", "Google Drive", "Google Chrome", "YouTube", "Google"
     ],
+    "oem_apps": {
+        "Samsung": {
+            "Samsung Internet": "com.sec.android.app.sbrowser",
+            "Samsung Calendar": "com.samsung.android.calendar",
+            "Samsung Messages": "com.samsung.android.messaging",
+            "Samsung Contacts": "com.samsung.android.app.contacts",
+            "Samsung Gallery": "com.sec.android.gallery3d",
+            "Samsung My Files": "com.sec.android.app.myfiles",
+            "Galaxy Store": "com.sec.android.app.samsungapps",
+            "Samsung Clock": "com.sec.android.app.clockpackage",
+            "Samsung Calculator": "com.sec.android.app.popupcalculator",
+            "Samsung Notes": "com.samsung.android.app.notes",
+            "Bixby Voice": "com.samsung.android.bixby.agent",
+            "Samsung Pay": "com.samsung.android.spay"
+        },
+        "Google": {
+            "Pixel Tips": "com.google.android.apps.tips",
+            "Pixel Camera": "com.google.android.GoogleCamera",
+            "Personal Safety": "com.google.android.apps.safety",
+            "Recorder": "com.google.android.apps.recorder"
+        },
+        "Xiaomi": {
+            "Mi Browser": "com.android.browser",
+            "Mi File Manager": "com.mi.android.global.Fileexplorer",
+            "Mi Cloud": "com.miui.cloudservice",
+            "Xiaomi Gallery": "com.miui.gallery",
+            "Xiaomi Notes": "com.miui.notes"
+        },
+        "OnePlus": {
+            "OnePlus Gallery": "com.oneplus.gallery",
+            "OnePlus Weather": "com.oneplus.weather",
+            "Zen Mode": "com.oneplus.brickmode"
+        },
+        "Sony": {
+            "Sony Music": "com.sonyericsson.music",
+            "Sony Album": "com.sonyericsson.album"
+        },
+        "Motorola": {
+            "Moto Actions": "com.motorola.actions",
+            "Moto Display": "com.motorola.motodisplay"
+        },
+        "LG": {
+            "LG Health": "com.lge.lifetracker",
+            "LG SmartWorld": "com.lge.ha",
+            "QuickMemo+": "com.lge.qmemoplus",
+            "LG Calendar": "com.lge.calendar",
+            "LG Music": "com.lge.music"
+        },
+        "Huawei": {
+            "Huawei AppGallery": "com.huawei.appmarket",
+            "Huawei Health": "com.huawei.health",
+            "Huawei Music": "com.android.mediacenter",
+            "Huawei Video": "com.huawei.himovie",
+            "Huawei Browser": "com.huawei.browser"
+        },
+        "Oppo": {
+            "Oppo App Market": "com.heytap.market",
+            "Oppo Theme Store": "com.heytap.themestore",
+            "Oppo Game Space": "com.coloros.gamespace",
+            "Oppo Photos": "com.coloros.gallery3d"
+        }
+    },
+    "file_signatures": {
+        "jpg": "FFD8FFE0",
+        "png": "89504E470D0A1A0A",
+        "zip": "504B0304",
+        "pdf": "255044462D",
+        "mp4": "0000001866747970",
+        "sqlite": "53514C69746520666F726D6174203300"
+    },
     "app_catalog": {
-        "Messaging": {
+        "Messaging & Communication": {
             "WhatsApp": "com.whatsapp",
             "Telegram": "org.telegram.messenger",
             "Signal": "org.thoughtcrime.securesms",
@@ -17,7 +88,12 @@
             "Slack": "com.Slack",
             "Microsoft Teams": "com.microsoft.teams",
             "Viber": "com.viber.voip",
-            "WeChat": "com.tencent.mm"
+            "WeChat": "com.tencent.mm",
+            "Skype": "com.skype.raider",
+            "Line": "jp.naver.line.android",
+            "Kik": "kik.android",
+            "Threema": "ch.threema.app",
+            "Wickr Me": "com.mywickr.wickr2"
         },
         "Social Media": {
             "Instagram": "com.instagram.android",
@@ -28,17 +104,51 @@
             "LinkedIn": "com.linkedin.android",
             "Reddit": "com.reddit.frontpage",
             "Pinterest": "com.pinterest",
-            "Tumblr": "com.tumblr"
+            "Tumblr": "com.tumblr",
+            "BeReal": "com.bereal.ft",
+            "Threads": "com.instagram.barcelona"
         },
-        "Finance": {
+        "Maps & Navigation": {
+            "Waze": "com.waze",
+            "Citymapper": "com.citymapper.app.release",
+            "OsmAnd": "net.osmand",
+            "Maps.me": "com.mapswithme.maps.pro",
+            "Yandex Maps": "ru.yandex.yandexmaps",
+            "Here WeGo": "com.here.app.maps"
+        },
+        "Web Browsers": {
+            "Firefox": "org.mozilla.firefox",
+            "Microsoft Edge": "com.microsoft.emmx",
+            "DuckDuckGo": "com.duckduckgo.mobile.android",
+            "Opera": "com.opera.browser",
+            "Brave": "com.brave.browser",
+            "Tor Browser": "org.torproject.torbrowser",
+            "Samsung Internet": "com.sec.android.app.sbrowser"
+        },
+        "Productivity & Notes": {
+            "Google Keep": "com.google.android.keep",
+            "Evernote": "com.evernote",
+            "Microsoft OneNote": "com.microsoft.office.onenote",
+            "Notion": "notion.id",
+            "SimpleNote": "com.automattic.simplenote",
+            "Obsidian": "md.obsidian",
+            "Standard Notes": "com.standardnotes",
+            "Joplin": "net.cozic.joplin"
+        },
+        "Cryptocurrency & Finance": {
+            "Coinbase": "com.coinbase.android",
+            "Binance": "com.binance.dev",
+            "Trust Wallet": "com.wallet.crypto.trustapp",
+            "MetaMask": "io.metamask",
+            "Kraken": "com.kraken.invest.app",
+            "Crypto.com": "co.mona.android",
+            "Exodus": "exodusmovement.exodus",
+            "BitPay": "com.bitpay.wallet",
             "PayPal": "com.paypal.android.p2pmobile",
             "Cash App": "com.squareup.cash",
             "Venmo": "com.venmo",
-            "Coinbase": "com.coinbase.android",
-            "Chase Mobile": "com.chase.sig.android",
             "Revolut": "com.revolut.revolut",
-            "Robinhood": "com.robinhood.android",
-            "Binance": "com.binance.dev"
+            "Chase Mobile": "com.chase.sig.android"
         },
         "Shopping": {
             "Amazon Shopping": "com.amazon.mShop.android.shopping",
@@ -46,13 +156,31 @@
             "Etsy": "com.etsy.android",
             "Walmart": "com.walmart.android",
             "Target": "com.target.ui",
-            "AliExpress": "com.alibaba.aliexpresshd"
+            "AliExpress": "com.alibaba.aliexpresshd",
+            "Shein": "com.zzkko"
         },
         "Health & Fitness": {
             "Fitbit": "com.fitbit.FitbitMobile",
             "MyFitnessPal": "com.myfitnesspal.android",
             "Strava": "com.strava",
-            "Calm": "com.calm.android"
+            "Calm": "com.calm.android",
+            "Headspace": "com.getsomeheadspace.android"
+        },
+        "Travel & Transport": {
+            "Uber": "com.ubercab",
+            "Lyft": "me.lyft.android",
+            "Airbnb": "com.airbnb.android",
+            "Booking.com": "com.booking",
+            "Expedia": "com.expedia.bookings",
+            "TripAdvisor": "com.tripadvisor.tripadvisor"
+        },
+        "Streaming & Entertainment": {
+            "Spotify": "com.spotify.music",
+            "Netflix": "com.netflix.mediaclient",
+            "Twitch": "tv.twitch.android",
+            "Hulu": "com.hulu.plus",
+            "Disney+": "com.disney.disneyplus",
+            "Audible": "com.audible.application"
         },
         "Dating": {
             "Tinder": "com.tinder",
@@ -60,38 +188,6 @@
             "Hinge": "co.hinge.app",
             "Grindr": "com.grindrapp.android",
             "OkCupid": "com.okcupid.okcupid"
-        },
-        "Travel & Transport": {
-            "Uber": "com.ubercab",
-            "Lyft": "me.lyft.android",
-            "Airbnb": "com.airbnb.android",
-            "Google Earth": "com.google.earth",
-            "Booking.com": "com.booking",
-            "Expedia": "com.expedia.bookings"
-        },
-        "Productivity & Tools": {
-            "Zoom": "us.zoom.videomeetings",
-            "Google Meet": "com.google.android.apps.meetings",
-            "Dropbox": "com.dropbox.android",
-            "ProtonMail": "ch.protonmail.android",
-            "Firefox": "org.mozilla.firefox",
-            "Tor Browser": "org.torproject.torbrowser",
-            "Microsoft Outlook": "com.microsoft.office.outlook",
-            "Evernote": "com.evernote"
-        },
-        "Entertainment": {
-            "Spotify": "com.spotify.music",
-            "Netflix": "com.netflix.mediaclient",
-            "YouTube": "com.google.android.youtube",
-            "Twitch": "tv.twitch.android",
-            "Hulu": "com.hulu.plus",
-            "Disney+": "com.disney.disneyplus"
-        },
-        "News": {
-            "NYTimes": "com.nytimes.android",
-            "BBC News": "bbc.mobile.news.ww",
-            "CNN": "com.cnn.mobile.android.phone",
-            "Fox News": "com.foxnews.android"
         }
     },
     "relationship_prefs": {

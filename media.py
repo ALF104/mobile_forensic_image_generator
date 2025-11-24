@@ -4,7 +4,7 @@ import hashlib
 import logging
 import random
 from datetime import datetime
-from typing import List, Tuple, Dict
+from typing import Tuple, Dict
 
 try:
     from PIL import Image, ImageDraw, ImageFont
@@ -35,7 +35,6 @@ class MediaEngine:
             self.logger.warning("Pillow (PIL) not found. Image generation will be skipped.")
 
     def _to_deg(self, value, loc):
-        """Helper to convert decimal coordinates to EXIF rational format."""
         if value < 0: loc_value = loc[1]
         else: loc_value = loc[0]
         abs_value = abs(value)
@@ -50,24 +49,31 @@ class MediaEngine:
         main_path = self.fs.get_path("dcim") / filename
         thumb_path = self.fs.get_path("thumbnails") / filename
         try:
-            h = hashlib.md5(filename.encode()).hexdigest()
-            color = (int(h[:2], 16), int(h[2:4], 16), int(h[4:6], 16))
-            img = Image.new('RGB', (400, 300), color=color)
-            draw = ImageDraw.Draw(img)
-            draw.rectangle([(20, 20), (380, 280)], fill=(255, 255, 255))
+            # Improvement #2: Generate Random Noise instead of solid color
+            # This looks more like real data in a hex editor/preview
+            img = Image.effect_mandelbrot((400, 300), (0, 0, 400, 300), 100)
+            # Fallback if effect not available or purely random noise desired:
+            if random.random() < 0.5:
+                # Create random pixel data
+                pixels = bytes([random.randint(0, 255) for _ in range(400 * 300 * 3)])
+                img = Image.frombytes('RGB', (400, 300), pixels)
             
-            # Visual Text
-            text = f"IMG: {filename}"
+            draw = ImageDraw.Draw(img)
+            
+            # Visual Text Overlay
+            text = f"IMG: {filename}\nDate: {timestamp}"
             if location: text += f"\nLat: {location[0]:.4f}\nLon: {location[1]:.4f}"
+            
             try:
-                font = ImageFont.load_default()
-                draw.text((200, 150), text, fill=color, anchor="mm", font=font)
+                # Add a semi-transparent box for text legibility
+                draw.rectangle([10, 10, 200, 80], fill=(0, 0, 0))
+                draw.text((15, 15), text, fill=(255, 255, 255))
             except Exception: pass
             
             # Save initial image
-            img.save(main_path, "JPEG")
+            img.save(main_path, "JPEG", quality=85)
             
-            # Feature #1: Real EXIF Injection
+            # Real EXIF Injection
             if PIEXIF_AVAILABLE and location:
                 exif_dict = {"GPS": {}}
                 lat_deg = self._to_deg(location[0], ["N", "S"])
@@ -82,8 +88,11 @@ class MediaEngine:
                 img.save(main_path, "JPEG", exif=exif_bytes)
 
             set_file_timestamp(main_path, timestamp)
+            
+            # Generate Thumbnail
             img.resize((320, 240)).save(thumb_path, "JPEG")
             set_file_timestamp(thumb_path, timestamp)
+            
         except Exception as e: self.logger.error(f"Error generating image {filename}: {e}")
 
     def build_media_store_db(self):
@@ -102,19 +111,29 @@ class MediaEngine:
                 conn.commit()
         except sqlite3.Error: pass
 
-    def generate_financial_receipts(self, installed_apps: Dict[str, str]):
+    def generate_financial_receipts(self, installed_apps: Dict[str, str], timestamp: datetime):
         path = self.fs.get_path("downloads")
         path.mkdir(parents=True, exist_ok=True)
         finance_apps = ["PayPal", "Cash App", "Venmo", "Coinbase", "Amazon"]
-        for app_name in installed_apps.keys():
+        
+        # Determine if we should generate a receipt today
+        if random.random() < 0.2:
             for fin in finance_apps:
-                if fin.lower() in app_name.lower():
+                # Check if app is installed (loose matching)
+                is_installed = any(fin.lower() in app_key.lower() for app_key in installed_apps.keys())
+                
+                if is_installed:
                     filename = f"{fin}_Receipt_{random.randint(10000,99999)}.pdf"
+                    file_path = path / filename
                     try:
-                        with open(path / filename, "wb") as f:
+                        with open(file_path, "wb") as f:
                             f.write(b"%PDF-1.5\n")
-                            f.write(f"Transaction confirmed for {fin}\nAmount: ${random.uniform(50, 500):.2f}".encode())
+                            f.write(f"Transaction confirmed for {fin}\nAmount: ${random.uniform(50, 500):.2f}\nDate: {timestamp}".encode())
                             f.write(b"\n%%EOF")
+                        
+                        # Improvement #7: Correct timestamping
+                        set_file_timestamp(file_path, timestamp)
+                        return # One receipt per trigger is enough
                     except OSError: pass
 
     def generate_download_manager_db(self):

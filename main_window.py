@@ -6,34 +6,190 @@ from datetime import datetime
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QHBoxLayout, QLabel, QSpinBox, QPushButton, 
                                QTextEdit, QProgressBar, QGroupBox, QLineEdit, 
-                               QCheckBox, QTreeWidget, QTreeWidgetItem, 
-                               QDateTimeEdit, QComboBox, QMessageBox)
+                               QTreeWidget, QTreeWidgetItem, 
+                               QDateTimeEdit, QComboBox, QMessageBox, QHeaderView)
 from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QIcon, QFont
 
 from core.generator_manager import GeneratorManager
 from gui.analyzer_tool import ForensicParserWindow
 
-MODERN_STYLE = """
-QMainWindow { background-color: #2b2b2b; color: #ffffff; }
-QWidget { color: #e0e0e0; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
-QGroupBox { 
-    border: 1px solid #555; border-radius: 5px; margin-top: 10px; font-weight: bold; color: #00acc1; 
+# --- MODERN "CYBER-FORENSIC" THEME ---
+CYBER_STYLE = """
+/* Global Window Settings */
+QMainWindow {
+    background-color: #121212; /* Deep background */
+    color: #e0e0e0;
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
 }
-QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; padding: 0 5px; }
-QLineEdit, QSpinBox, QDateTimeEdit, QComboBox { 
-    background-color: #3a3a3a; border: 1px solid #555; padding: 5px; border-radius: 3px; color: white; 
+
+QWidget {
+    font-size: 14px;
+    color: #cccccc;
 }
-QTreeWidget { background-color: #3a3a3a; border: 1px solid #555; border-radius: 3px; }
-QPushButton { 
-    background-color: #007acc; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; 
+
+/* Group Box Styling */
+QGroupBox {
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    margin-top: 22px; /* Leave space for title */
+    padding-top: 15px;
 }
-QPushButton:hover { background-color: #0098ff; }
-QPushButton:pressed { background-color: #005c99; }
-QProgressBar { 
-    border: 1px solid #555; border-radius: 4px; text-align: center; background-color: #3a3a3a; 
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 5px 10px;
+    background-color: #1e1e1e;
+    color: #00e5ff; /* Neon Cyan */
+    border: 1px solid #333333;
+    border-bottom: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-weight: bold;
 }
-QProgressBar::chunk { background-color: #00acc1; width: 10px; margin: 0.5px; }
-QTextEdit { background-color: #1e1e1e; border: 1px solid #444; font-family: Consolas, monospace; font-size: 12px; }
+
+/* Input Fields */
+QLineEdit, QSpinBox, QDateTimeEdit, QComboBox {
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 6px;
+    color: #ffffff;
+    selection-background-color: #00acc1;
+}
+
+QLineEdit:focus, QSpinBox:focus, QDateTimeEdit:focus, QComboBox:focus {
+    border: 1px solid #00e5ff; /* Cyan focus border */
+    background-color: #333333;
+}
+
+/* Dropdown Specifics */
+QComboBox {
+    padding-right: 20px; /* Make room for arrow */
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 25px;
+    border-left-width: 1px;
+    border-left-color: #444;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    background: #252525;
+}
+QComboBox QAbstractItemView {
+    background-color: #2c2c2c;
+    color: white;
+    selection-background-color: #00acc1;
+    border: 1px solid #444;
+    outline: none;
+}
+
+/* Tree Widget (App Selector) */
+QTreeWidget {
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    outline: none;
+}
+QTreeWidget::item {
+    padding: 5px;
+}
+QTreeWidget::item:hover {
+    background-color: #2a2a2a;
+}
+QTreeWidget::item:selected {
+    background-color: #37474f;
+    color: #00e5ff;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #263238; /* Dark Blue Grey */
+    color: #eceff1;
+    border: 1px solid #37474f;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+QPushButton:hover {
+    background-color: #37474f;
+    border: 1px solid #00e5ff;
+    color: #00e5ff;
+}
+QPushButton:pressed {
+    background-color: #00e5ff;
+    color: #121212;
+}
+QPushButton:disabled {
+    background-color: #1a1a1a;
+    color: #555;
+    border: 1px solid #333;
+}
+
+/* Specific Button Colors */
+QPushButton#generate_btn {
+    background-color: #00695c; /* Teal */
+    border-color: #004d40;
+}
+QPushButton#generate_btn:hover {
+    background-color: #00897b;
+    border-color: #00bfa5;
+    color: white;
+}
+
+QPushButton#cancel_btn {
+    background-color: #b71c1c; /* Red */
+    border-color: #7f0000;
+}
+QPushButton#cancel_btn:hover {
+    background-color: #d32f2f;
+    color: white;
+}
+
+/* Progress Bar */
+QProgressBar {
+    border: 1px solid #444;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #1e1e1e;
+    color: white;
+    font-weight: bold;
+}
+QProgressBar::chunk {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00acc1, stop:1 #26c6da);
+    border-radius: 3px;
+}
+
+/* Logs */
+QTextEdit {
+    background-color: #000000;
+    color: #00ff00; /* Matrix Green console text */
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    border: none;
+    background: #1e1e1e;
+    width: 10px;
+    margin: 0px;
+}
+QScrollBar::handle:vertical {
+    background: #555;
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
 """
 
 class GeneratorWorker(QThread):
@@ -69,10 +225,11 @@ class GeneratorWorker(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("ALF Forensics - Generator V3.1")
-        self.resize(1100, 850)
-        self.setStyleSheet(MODERN_STYLE)
+        self.setWindowTitle("ALF Forensics - Generator V3.4 (Cyber UI)")
+        self.resize(1200, 900)
+        self.setStyleSheet(CYBER_STYLE)
         
+        self.device_profiles = {}
         self.load_config()
         self.setup_ui()
         self.worker = None
@@ -82,6 +239,13 @@ class MainWindow(QMainWindow):
             base = Path(__file__).parent.parent / "config"
             with open(base / "settings.json", "r") as f: self.settings = json.load(f)
             with open(base / "scenarios.json", "r") as f: self.scenarios = json.load(f)
+            
+            profile_path = base / "device_profiles.json"
+            if profile_path.exists():
+                with open(profile_path, "r") as f: self.device_profiles = json.load(f)
+            else:
+                self.device_profiles = {"pixel_8": {"model": "Pixel 8 (Fallback)"}}
+
         except Exception as e:
             QMessageBox.critical(self, "Config Error", f"Could not load config files: {e}")
             sys.exit(1)
@@ -90,58 +254,88 @@ class MainWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+        layout.setContentsMargins(25, 25, 25, 25)
 
-        # Header
+        # --- Header ---
         header_layout = QHBoxLayout()
+        
+        title_container = QVBoxLayout()
         title = QLabel("ANDROID ARTIFACT GENERATOR")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #00acc1;")
-        header_layout.addWidget(title)
+        title.setStyleSheet("font-size: 24px; font-weight: 900; color: #00e5ff; letter-spacing: 2px;")
+        subtitle = QLabel("Forensic Dataset Simulation Engine v3.4")
+        subtitle.setStyleSheet("font-size: 14px; color: #78909c; font-style: italic;")
+        title_container.addWidget(title)
+        title_container.addWidget(subtitle)
+        
+        header_layout.addLayout(title_container)
         header_layout.addStretch()
-        btn_analyzer = QPushButton("Launch Analyzer Tool")
+        
+        btn_analyzer = QPushButton("LAUNCH ANALYZER")
+        btn_analyzer.setCursor(Qt.PointingHandCursor)
+        btn_analyzer.setMinimumHeight(40)
         btn_analyzer.clicked.connect(self.launch_analyzer)
         header_layout.addWidget(btn_analyzer)
+        
         layout.addLayout(header_layout)
 
-        # Identity
-        gb_id = QGroupBox("Target Identity")
+        # --- Top Section: Identity & Device ---
+        gb_id = QGroupBox("TARGET IDENTITY & DEVICE PROFILE")
         l_id = QHBoxLayout()
+        l_id.setSpacing(15)
+        
         self.inp_fname = QLineEdit(self.settings.get("default_first_name", "John"))
         self.inp_sname = QLineEdit(self.settings.get("default_surname", "Doe"))
-        self.inp_net_size = QSpinBox(); self.inp_net_size.setRange(5, 100); self.inp_net_size.setValue(15)
-        l_id.addWidget(QLabel("First Name:")); l_id.addWidget(self.inp_fname)
-        l_id.addWidget(QLabel("Surname:")); l_id.addWidget(self.inp_sname)
-        l_id.addWidget(QLabel("Network Size:")); l_id.addWidget(self.inp_net_size)
+        
+        self.combo_device = QComboBox()
+        self.combo_device.addItems(list(self.device_profiles.keys()))
+        self.combo_device.setCursor(Qt.PointingHandCursor)
+        
+        self.inp_net_size = QSpinBox(); self.inp_net_size.setRange(5, 100); self.inp_net_size.setValue(20)
+        
+        # Helper to create labeled inputs
+        def add_field(label_text, widget):
+            v = QVBoxLayout()
+            lbl = QLabel(label_text)
+            lbl.setStyleSheet("font-weight: bold; color: #b0bec5; font-size: 12px;")
+            v.addWidget(lbl)
+            v.addWidget(widget)
+            l_id.addLayout(v)
+
+        add_field("FIRST NAME", self.inp_fname)
+        add_field("SURNAME", self.inp_sname)
+        add_field("DEVICE MODEL", self.combo_device)
+        add_field("NETWORK SIZE", self.inp_net_size)
+        
         gb_id.setLayout(l_id)
         layout.addWidget(gb_id)
 
-        # Middle Section
+        # --- Middle Section: Apps & Params ---
         mid_layout = QHBoxLayout()
+        mid_layout.setSpacing(20)
         
         # Apps Tree
-        gb_apps = QGroupBox("Installed Applications")
+        gb_apps = QGroupBox("INSTALLED APPLICATIONS")
         l_apps = QVBoxLayout()
         self.tree_apps = QTreeWidget()
         self.tree_apps.setHeaderHidden(True)
+        self.tree_apps.setAlternatingRowColors(False)
         
         catalog = self.settings.get("app_catalog", {})
         
         for category, apps in catalog.items():
             cat_item = QTreeWidgetItem(self.tree_apps)
             cat_item.setText(0, category)
-            # FIX: Changed Qt.ItemIsTristate to Qt.ItemIsAutoTristate
             cat_item.setFlags(cat_item.flags() | Qt.ItemIsAutoTristate | Qt.ItemIsUserCheckable)
             cat_item.setExpanded(True)
+            # Style category items slightly different if possible, or rely on tree indent
             
             for app_name, pkg_name in apps.items():
                 app_item = QTreeWidgetItem(cat_item)
                 app_item.setText(0, app_name)
-                # Hide package name in a data column or just store it
                 app_item.setData(0, Qt.UserRole, pkg_name) 
                 app_item.setFlags(app_item.flags() | Qt.ItemIsUserCheckable)
                 
-                # Default checks for key apps
                 if app_name in ["WhatsApp", "Instagram", "Chrome"]:
                     app_item.setCheckState(0, Qt.Checked)
                 else:
@@ -149,75 +343,110 @@ class MainWindow(QMainWindow):
                     
         l_apps.addWidget(self.tree_apps)
         gb_apps.setLayout(l_apps)
-        mid_layout.addWidget(gb_apps, 1)
+        mid_layout.addWidget(gb_apps, 2) # Give more width to apps
 
         # Params
-        gb_time = QGroupBox("Simulation Parameters")
+        gb_time = QGroupBox("SIMULATION PARAMETERS")
         l_time = QVBoxLayout()
+        l_time.setSpacing(15)
         
         self.combo_scenario = QComboBox()
         profiles = list(self.scenarios.get("profiles", {}).keys())
         if not profiles: profiles = ["General Use"]
         self.combo_scenario.addItems(profiles)
         
-        self.date_start = QDateTimeEdit(datetime.now()); self.date_start.setCalendarPopup(True)
-        self.date_end = QDateTimeEdit(datetime.now()); self.date_end.setCalendarPopup(True)
+        # Dates
+        import time
+        start_ts = time.time() - (30 * 24 * 3600)
+        self.date_start = QDateTimeEdit(datetime.fromtimestamp(start_ts))
+        self.date_start.setCalendarPopup(True)
+        self.date_end = QDateTimeEdit(datetime.now())
+        self.date_end.setCalendarPopup(True)
         
         self.combo_activity = QComboBox()
-        self.combo_activity.addItems(["Low (20 msgs/day)", "Medium (50 msgs/day)", "High (100 msgs/day)"])
+        self.combo_activity.addItems(["Low (Burst Mode)", "Medium (Burst Mode)", "High (Burst Mode)"])
         self.combo_activity.setCurrentIndex(1)
         
-        l_time.addWidget(QLabel("Scenario Profile:"))
-        l_time.addWidget(self.combo_scenario)
-        l_time.addWidget(QLabel("Start Date:"))
-        l_time.addWidget(self.date_start)
-        l_time.addWidget(QLabel("End Date:"))
-        l_time.addWidget(self.date_end)
-        l_time.addWidget(QLabel("Activity Level:"))
-        l_time.addWidget(self.combo_activity)
+        # Use the helper again for consistent styling
+        def add_v_field(label_text, widget):
+            lbl = QLabel(label_text)
+            lbl.setStyleSheet("font-weight: bold; color: #b0bec5; font-size: 12px;")
+            l_time.addWidget(lbl)
+            l_time.addWidget(widget)
+
+        add_v_field("SCENARIO PROFILE", self.combo_scenario)
+        add_v_field("START DATE", self.date_start)
+        add_v_field("END DATE", self.date_end)
+        add_v_field("ACTIVITY LEVEL", self.combo_activity)
+        
         l_time.addStretch()
+        
+        # Info Label
+        info_lbl = QLabel("ℹ Note: Native apps (Phone, SMS, Play Store) are installed automatically.")
+        info_lbl.setWordWrap(True)
+        info_lbl.setStyleSheet("color: #546e7a; font-size: 12px;")
+        l_time.addWidget(info_lbl)
+
         gb_time.setLayout(l_time)
         mid_layout.addWidget(gb_time, 1)
         
         layout.addLayout(mid_layout)
 
-        # Footer
+        # --- Footer ---
         btn_layout = QHBoxLayout()
         self.btn_generate = QPushButton("INITIALIZE GENERATION SEQUENCE")
-        self.btn_generate.setMinimumHeight(50)
-        self.btn_generate.setStyleSheet("font-size: 16px; background-color: #00897b;")
+        self.btn_generate.setObjectName("generate_btn") # For CSS targeting
+        self.btn_generate.setMinimumHeight(55)
+        self.btn_generate.setCursor(Qt.PointingHandCursor)
         self.btn_generate.clicked.connect(self.start_generation)
-        btn_layout.addWidget(self.btn_generate)
+        btn_layout.addWidget(self.btn_generate, 3)
         
-        self.btn_cancel = QPushButton("CANCEL")
-        self.btn_cancel.setMinimumHeight(50)
-        self.btn_cancel.setStyleSheet("font-size: 16px; background-color: #c62828;")
+        self.btn_cancel = QPushButton("ABORT")
+        self.btn_cancel.setObjectName("cancel_btn")
+        self.btn_cancel.setMinimumHeight(55)
+        self.btn_cancel.setCursor(Qt.PointingHandCursor)
         self.btn_cancel.clicked.connect(self.cancel_generation)
         self.btn_cancel.setEnabled(False)
-        btn_layout.addWidget(self.btn_cancel)
+        btn_layout.addWidget(self.btn_cancel, 1)
         layout.addLayout(btn_layout)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
+        self.progress_bar.setFixedHeight(20)
+        self.progress_bar.setTextVisible(False) 
         layout.addWidget(self.progress_bar)
 
         self.log_view = QTextEdit()
         self.log_view.setReadOnly(True)
-        self.log_view.setMaximumHeight(150)
+        self.log_view.setMaximumHeight(120)
         layout.addWidget(self.log_view)
 
     def get_selected_apps_map(self):
-        """Returns a dict {AppName: PackageName}"""
         selected = {}
-        # Add Natives (Hardcoded for now or from settings)
+        # 1. Add Standard Natives (Hardcoded)
         for nat in self.settings.get("native_apps", []):
-            # Simple heuristic for native packages if not defined in catalog
             pkg = f"com.android.{nat.lower().replace(' ', '')}"
             if "chrome" in nat.lower(): pkg = "com.android.chrome"
             if "pixel" in nat.lower(): pkg = "com.google.android.apps.nexuslauncher"
+            if "play store" in nat.lower(): pkg = "com.android.vending"
+            if "play services" in nat.lower(): pkg = "com.google.android.gms"
+            if "gmail" in nat.lower(): pkg = "com.google.android.gm"
+            if "maps" in nat.lower(): pkg = "com.google.android.apps.maps"
+            if "photos" in nat.lower(): pkg = "com.google.android.apps.photos"
+            if "youtube" in nat.lower(): pkg = "com.google.android.youtube"
             selected[nat] = pkg
 
-        # Walk tree
+        # 2. Add OEM Specific Apps
+        current_device_key = self.combo_device.currentText()
+        if current_device_key in self.device_profiles:
+            manufacturer = self.device_profiles[current_device_key].get("manufacturer")
+            oem_catalog = self.settings.get("oem_apps", {})
+            if manufacturer in oem_catalog:
+                self.log_view.append(f"Detected {manufacturer} device. Injecting OEM apps...")
+                for app_name, pkg in oem_catalog[manufacturer].items():
+                    selected[app_name] = pkg
+
+        # 3. Add User Selected Apps from Tree
         root = self.tree_apps.invisibleRootItem()
         for i in range(root.childCount()):
             category = root.child(i)
@@ -233,26 +462,30 @@ class MainWindow(QMainWindow):
         self.log_view.clear()
         self.btn_generate.setEnabled(False)
         self.btn_cancel.setEnabled(True)
+        self.log_view.append(">>> SYSTEM INITIALIZED. STARTING SEQUENCE...")
         
-        rates = [20, 50, 100]
-        msgs_per_day = rates[self.combo_activity.currentIndex()]
-        days = (self.date_end.dateTime().toPython() - self.date_start.dateTime().toPython()).days
-        total_msgs = max(1, days * msgs_per_day)
+        rates = [200, 500, 1000] 
+        msgs_target = rates[self.combo_activity.currentIndex()]
 
-        # Pass the map, not just a list
         apps_map = self.get_selected_apps_map()
 
         params = {
             "owner_name": f"{self.inp_fname.text()} {self.inp_sname.text()}",
             "start_date": self.date_start.dateTime().toPython(),
             "end_date": self.date_end.dateTime().toPython(),
-            "installed_apps": apps_map, # DICTIONARY
+            "installed_apps": apps_map,
             "network_size": self.inp_net_size.value(),
-            "num_messages": total_msgs,
+            "num_messages": msgs_target,
             "scenario": self.combo_scenario.currentText()
         }
 
-        self.worker = GeneratorWorker(params, self.settings, self.scenarios)
+        selected_device = self.combo_device.currentText()
+        run_config = self.settings.copy()
+        
+        if selected_device in self.device_profiles:
+            run_config["device_profiles"] = {selected_device: self.device_profiles[selected_device]}
+
+        self.worker = GeneratorWorker(params, run_config, self.scenarios)
         self.worker.progress.connect(self.progress_bar.setValue)
         self.worker.log.connect(self.log_view.append)
         self.worker.finished.connect(self.generation_finished)
@@ -261,14 +494,16 @@ class MainWindow(QMainWindow):
 
     def cancel_generation(self):
         if self.worker:
-            self.log_view.append("Cancellation requested...")
+            self.log_view.append("!!! INTERRUPT SIGNAL RECEIVED. STOPPING...")
             self.worker.stop()
             self.btn_cancel.setEnabled(False)
 
     def generation_finished(self):
         self.btn_generate.setEnabled(True)
         self.btn_cancel.setEnabled(False)
-        QMessageBox.information(self, "Status", "Operation Completed (or Cancelled).")
+        self.progress_bar.setValue(100)
+        self.log_view.append(">>> SEQUENCE COMPLETE. DATA ARTIFACTS READY.")
+        QMessageBox.information(self, "Status", "Generation Complete!")
 
     def generation_error(self, err_msg):
         self.btn_generate.setEnabled(True)
